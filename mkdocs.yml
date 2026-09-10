@@ -5,26 +5,86 @@ site_url: https://my-interview-notes.aosikagirl23.workers.dev
 repo_name: ouyangru/my-interview-notes
 repo_url: https://github.com/ouyangru/my-interview-notes
 
+extra_css:
+  - assets/stylesheets/extra.css
+
 theme:
   name: material
   language: zh
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.indexes
+    - navigation.top
+    - toc.follow
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.tabs.link
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: 切换到深色模式
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: 切换到浅色模式
+
+plugins:
+  - search:
+      lang:
+        - zh
+        - en
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.inlinehilite
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.tabbed:
+      alternate_style: true
 
 nav:
   - 首页: index.md
-  - C/C++: C++.md
-  - Linux 服务器: linux服务器.md
-  - 操作系统: 操作系统.md
-  - 计算机网络: 计算机网络.md
-  - 数据结构与算法: 数据结构及算法.md
-  - 手撕代码: 手撕代码.md
-  - 数据库: 数据库.md
-  - 设计模式: 设计模式.md
-  - 其他技术栈: 其他技术栈.md
-  - 离谱问题: 离谱问题.md
-  - LeetCode 刷题: leetcode刷题.md
-  - 书籍笔记:
-      - 操作系统: 书籍笔记/操作系统.md
-      - C++ 语言核心及进阶: 书籍笔记/c++语言核心及进阶.md
-      - Linux 高性能服务器: 书籍笔记/linux高性能服务器.md
-      - 汇编语言: 书籍笔记/汇编语言.md
-      - 设计模式: 书籍笔记/设计模式.md
+  - 个人知识库:
+      - 知识地图: knowledge/index.md
+      - 操作系统:
+          - 进程与线程: knowledge/操作系统/进程与线程.md
+  - 面试复盘:
+      - 使用说明: interviews/index.md
+  - 原始资料:
+      - C/C++: C++.md
+      - Linux 服务器: linux服务器.md
+      - 操作系统: 操作系统.md
+      - 计算机网络: 计算机网络.md
+      - 数据结构与算法: 数据结构及算法.md
+      - 手撕代码: 手撕代码.md
+      - 数据库: 数据库.md
+      - 设计模式: 设计模式.md
+      - 其他技术栈: 其他技术栈.md
+      - 离谱问题: 离谱问题.md
+      - LeetCode 刷题: leetcode刷题.md
+      - 书籍笔记:
+          - 操作系统: 书籍笔记/操作系统.md
+          - C++ 语言核心及进阶: 书籍笔记/c++语言核心及进阶.md
+          - Linux 高性能服务器: 书籍笔记/linux高性能服务器.md
+          - 汇编语言: 书籍笔记/汇编语言.md
+          - 设计模式: 书籍笔记/设计模式.md
+  - 模板:
+      - 知识点模板: templates/knowledge-note.md
+      - 面试复盘模板: templates/interview-review.md
