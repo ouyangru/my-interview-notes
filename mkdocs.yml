@@ -72,6 +72,7 @@ markdown_extensions:
 nav:
   - 首页: index.md
   - 个人知识库:
+      - 当前复习状态: knowledge/STATUS.md
       - 知识地图: knowledge/index.md
       - 操作系统:
           - 进程与线程: knowledge/操作系统/进程与线程.md
