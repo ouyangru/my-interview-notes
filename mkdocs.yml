@@ -15,6 +15,9 @@ extra_javascript:
   - assets/javascripts/web-editor-delete.js
   - assets/javascripts/external-links.js
 
+hooks:
+  - hooks/interview_nav.py
+
 theme:
   name: material
   language: zh
@@ -79,8 +82,6 @@ nav:
           - 进程与线程: knowledge/操作系统/进程与线程.md
   - 面试复盘:
       - 使用说明: interviews/index.md
-      - 2026-09-10 恒玄科技一面: interviews/2026-09-10-恒玄科技-一面.md
-      - 2026-08-13 字节跳动多媒体开发一面: interviews/2026-08-13-字节跳动-多媒体开发一面.md
   - 原始资料:
       - C/C++: C++.md
       - Linux 服务器: linux服务器.md
