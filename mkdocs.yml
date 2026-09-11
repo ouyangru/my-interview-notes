@@ -17,6 +17,7 @@ extra_javascript:
 
 hooks:
   - hooks/interview_nav.py
+  - hooks/knowledge_nav.py
 
 theme:
   name: material
@@ -78,8 +79,6 @@ nav:
   - 个人知识库:
       - 当前复习状态: knowledge/STATUS.md
       - 知识地图: knowledge/index.md
-      - 操作系统:
-          - 进程与线程: knowledge/操作系统/进程与线程.md
   - 面试复盘:
       - 使用说明: interviews/index.md
   - 原始资料:
