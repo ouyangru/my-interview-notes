@@ -1,5 +1,6 @@
 const JSON_HEADERS = { 'content-type': 'application/json; charset=utf-8' };
 const API_VERSION = '2022-11-28';
+const WORKER_VERSION = '2026-09-12-html-refresh-v1';
 
 export default {
   async fetch(request, env) {
@@ -17,9 +18,26 @@ export default {
       }
     }
 
-    return env.ASSETS.fetch(request);
+    const response = await env.ASSETS.fetch(request);
+    return withFreshHtmlHeaders(response);
   },
 };
+
+function withFreshHtmlHeaders(response) {
+  const contentType = (response.headers.get('content-type') || '').toLowerCase();
+  if (!contentType.includes('text/html')) return response;
+
+  const headers = new Headers(response.headers);
+  headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+  headers.set('Pragma', 'no-cache');
+  headers.set('Expires', '0');
+  headers.set('X-KB-Worker-Version', WORKER_VERSION);
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  });
+}
 
 async function handleEditorApi(request, env, url) {
   if (url.pathname === '/api/editor/status' && request.method === 'GET') {
@@ -29,6 +47,7 @@ async function handleEditorApi(request, env, url) {
       editor_key_configured: Boolean(env.EDITOR_KEY),
       repository: `${env.GITHUB_OWNER || 'ouyangru'}/${env.GITHUB_REPO || 'my-interview-notes'}`,
       branch: env.GITHUB_BRANCH || 'main',
+      worker_version: WORKER_VERSION,
     });
   }
 
