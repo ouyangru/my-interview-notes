@@ -1,9 +1,17 @@
 {
   "name": "my-interview-notes",
-  "compatibility_date": "2026-09-10",
+  "main": "src/worker.js",
+  "compatibility_date": "2026-09-11",
   "assets": {
     "directory": "./site",
+    "binding": "ASSETS",
+    "run_worker_first": ["/api/editor/*"],
     "not_found_handling": "404-page",
     "html_handling": "auto-trailing-slash"
+  },
+  "vars": {
+    "GITHUB_OWNER": "ouyangru",
+    "GITHUB_REPO": "my-interview-notes",
+    "GITHUB_BRANCH": "main"
   }
 }

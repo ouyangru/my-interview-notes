@@ -4,9 +4,14 @@ site_url: https://my-interview-notes.aosikagirl23.workers.dev
 
 repo_name: ouyangru/my-interview-notes
 repo_url: https://github.com/ouyangru/my-interview-notes
+edit_uri: edit/main/docs/
 
 extra_css:
   - assets/stylesheets/extra.css
+  - assets/stylesheets/web-editor.css
+
+extra_javascript:
+  - assets/javascripts/web-editor.js
 
 theme:
   name: material
@@ -22,6 +27,7 @@ theme:
     - search.highlight
     - content.code.copy
     - content.tabs.link
+    - content.action.edit
   palette:
     - media: "(prefers-color-scheme: light)"
       scheme: default
