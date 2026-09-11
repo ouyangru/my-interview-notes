@@ -8,7 +8,7 @@
 
 ## 最近复盘
 
-- [2026-09-10 · 嵌入式 / Linux 系统软件面试复盘](2026-09-10-嵌入式Linux系统软件.md) — C 传参、指针与栈、结构体对齐、TCP、CAN、I²C/UART/SPI、Bootloader、调度与 FreeRTOS、V853 慢客户端、TBox MCU/Linux 分工、共享内存同步。
+- [2026-09-10 · 恒玄科技 · 一面](2026-09-10-恒玄科技-一面.md) — 约 50 分钟；C 传参/指针与栈、结构体对齐、TCP、CAN、I²C/UART/SPI、Bootloader、调度与 FreeRTOS、V853 慢客户端、TBox MCU/Linux 分工、共享内存同步，并保留完整原始语音转写。
 
 ## 固定复盘原则
 
