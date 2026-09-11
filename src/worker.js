@@ -36,7 +36,7 @@ async function handleEditorApi(request, env, url) {
     const webPath = url.searchParams.get('path') || '/';
     const page = await resolvePage(env, webPath);
     if (!page) return json({ detail: '没有找到当前网页对应的 Markdown 源文件' }, 404);
-    return json(page);
+    return json({ ...page, deletable: await canDeleteSourcePath(env, page.source_path) });
   }
 
   if (url.pathname === '/api/editor/page' && request.method === 'PUT') {
@@ -49,11 +49,43 @@ async function handleEditorApi(request, env, url) {
     if (typeof body.content !== 'string') return json({ detail: 'content 必须是字符串' }, 400);
     if (!body.sha) return json({ detail: '缺少源文件版本信息，请刷新后再保存' }, 400);
 
-    const result = await githubWriteFile(env, sourcePath, body.content, body.sha, cleanCommitMessage(body.message, 'docs: edit note from web'));
+    const result = await githubWriteFile(
+      env,
+      sourcePath,
+      body.content,
+      body.sha,
+      webCommitMessage(body.message, `docs: edit ${sourcePath.replace(/^docs\//, '')}`),
+    );
     return json({
       ok: true,
       source_path: sourcePath,
       sha: result.content?.sha || null,
+      commit_sha: result.commit?.sha || null,
+      commit_url: result.commit?.html_url || null,
+    });
+  }
+
+  if (url.pathname === '/api/editor/page' && request.method === 'DELETE') {
+    const denied = authorize(request, env);
+    if (denied) return denied;
+
+    const body = await readJson(request);
+    const sourcePath = normalizeSourcePath(body.source_path);
+    if (!sourcePath) return json({ detail: '非法的 Markdown 路径' }, 400);
+    if (!(await canDeleteSourcePath(env, sourcePath))) {
+      return json({ detail: '该页面属于导航/原始资料或索引页，为避免破坏知识库结构，轻量编辑器不允许直接删除' }, 400);
+    }
+    if (!body.sha) return json({ detail: '缺少源文件版本信息，请刷新后再删除' }, 400);
+
+    const result = await githubDeleteFile(
+      env,
+      sourcePath,
+      body.sha,
+      webCommitMessage(body.message, `docs: delete ${sourcePath.replace(/^docs\//, '')}`),
+    );
+    return json({
+      ok: true,
+      source_path: sourcePath,
       commit_sha: result.commit?.sha || null,
       commit_url: result.commit?.html_url || null,
     });
@@ -88,7 +120,7 @@ async function handleEditorApi(request, env, url) {
       sourcePath,
       content,
       page.sha,
-      cleanCommitMessage(body.message, `docs: add web supplement to ${sourcePath.replace(/^docs\//, '')}`),
+      webCommitMessage(body.message, `docs: add supplement to ${sourcePath.replace(/^docs\//, '')}`),
     );
 
     return json({
@@ -151,6 +183,16 @@ function normalizeSourcePath(value) {
   return source;
 }
 
+async function canDeleteSourcePath(env, sourcePath) {
+  if (!/^docs\/(knowledge|interviews)\/.+\.md$/i.test(sourcePath)) return false;
+  if (/(^|\/)index\.md$/i.test(sourcePath)) return false;
+
+  const nav = await githubReadFile(env, 'mkdocs.yml', true);
+  const relativePath = sourcePath.replace(/^docs\//, '');
+  if (nav?.content?.includes(relativePath)) return false;
+  return true;
+}
+
 async function githubReadFile(env, sourcePath, allowMissing = false) {
   const owner = env.GITHUB_OWNER || 'ouyangru';
   const repo = env.GITHUB_REPO || 'my-interview-notes';
@@ -205,6 +247,27 @@ async function githubWriteFile(env, sourcePath, content, sha, message) {
   return payload;
 }
 
+async function githubDeleteFile(env, sourcePath, sha, message) {
+  const owner = env.GITHUB_OWNER || 'ouyangru';
+  const repo = env.GITHUB_REPO || 'my-interview-notes';
+  const branch = env.GITHUB_BRANCH || 'main';
+  const url = `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/contents/${encodeRepoPath(sourcePath)}`;
+  const response = await fetch(url, {
+    method: 'DELETE',
+    headers: githubHeaders(env, true),
+    body: JSON.stringify({ message, sha, branch }),
+  });
+
+  const payload = await safeJson(response);
+  if (response.status === 409 || response.status === 422) {
+    throw new HttpError(409, 'GitHub 上的内容已经变化，请刷新页面后重新删除');
+  }
+  if (!response.ok) {
+    throw new HttpError(response.status === 403 ? 403 : 502, payload?.message || `GitHub 删除失败 (${response.status})`);
+  }
+  return payload;
+}
+
 function githubHeaders(env, write) {
   const headers = {
     Accept: 'application/vnd.github+json',
@@ -244,8 +307,13 @@ function appendSupplement(content, { quote, note, kind }) {
 }
 
 function cleanCommitMessage(value, fallback) {
-  const message = String(value || '').trim().replace(/[\r\n]+/g, ' ').slice(0, 180);
+  const message = String(value || '').trim().replace(/[\r\n]+/g, ' ').slice(0, 174);
   return message || fallback;
+}
+
+function webCommitMessage(value, fallback) {
+  const message = cleanCommitMessage(value, fallback).replace(/^\[WEB\]\s*/i, '');
+  return `[WEB] ${message}`;
 }
 
 function encodeRepoPath(path) {
