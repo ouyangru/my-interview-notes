@@ -9,8 +9,11 @@ export default {
       try {
         return await handleEditorApi(request, env, url);
       } catch (error) {
+        if (error instanceof HttpError) {
+          return json({ detail: error.message }, error.status);
+        }
         console.error('editor api error', error);
-        return json({ detail: '编辑服务暂时不可用' }, 500);
+        return json({ detail: error?.message || '编辑服务暂时不可用' }, 500);
       }
     }
 
@@ -194,10 +197,10 @@ async function githubWriteFile(env, sourcePath, content, sha, message) {
 
   const payload = await safeJson(response);
   if (response.status === 409 || response.status === 422) {
-    return Promise.reject(new HttpError(409, 'GitHub 上的内容已经变化，请刷新页面后重新编辑'));
+    throw new HttpError(409, 'GitHub 上的内容已经变化，请刷新页面后重新编辑');
   }
   if (!response.ok) {
-    throw new Error(payload?.message || `GitHub 保存失败 (${response.status})`);
+    throw new HttpError(response.status === 403 ? 403 : 502, payload?.message || `GitHub 保存失败 (${response.status})`);
   }
   return payload;
 }
