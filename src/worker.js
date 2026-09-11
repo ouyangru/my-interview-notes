@@ -36,7 +36,7 @@ async function handleEditorApi(request, env, url) {
     const webPath = url.searchParams.get('path') || '/';
     const page = await resolvePage(env, webPath);
     if (!page) return json({ detail: '没有找到当前网页对应的 Markdown 源文件' }, 404);
-    return json({ ...page, deletable: canDeleteSourcePath(page.source_path) });
+    return json({ ...page, deletable: await canDeleteSourcePath(env, page.source_path) });
   }
 
   if (url.pathname === '/api/editor/page' && request.method === 'PUT') {
@@ -72,8 +72,8 @@ async function handleEditorApi(request, env, url) {
     const body = await readJson(request);
     const sourcePath = normalizeSourcePath(body.source_path);
     if (!sourcePath) return json({ detail: '非法的 Markdown 路径' }, 400);
-    if (!canDeleteSourcePath(sourcePath)) {
-      return json({ detail: '为避免破坏导航，只允许删除 knowledge / interviews 下的普通笔记，index.md 与原始资料受保护' }, 400);
+    if (!(await canDeleteSourcePath(env, sourcePath))) {
+      return json({ detail: '该页面属于导航/原始资料或索引页，为避免破坏知识库结构，轻量编辑器不允许直接删除' }, 400);
     }
     if (!body.sha) return json({ detail: '缺少源文件版本信息，请刷新后再删除' }, 400);
 
@@ -183,9 +183,14 @@ function normalizeSourcePath(value) {
   return source;
 }
 
-function canDeleteSourcePath(sourcePath) {
+async function canDeleteSourcePath(env, sourcePath) {
   if (!/^docs\/(knowledge|interviews)\/.+\.md$/i.test(sourcePath)) return false;
-  return !/(^|\/)index\.md$/i.test(sourcePath);
+  if (/(^|\/)index\.md$/i.test(sourcePath)) return false;
+
+  const nav = await githubReadFile(env, 'mkdocs.yml', true);
+  const relativePath = sourcePath.replace(/^docs\//, '');
+  if (nav?.content?.includes(relativePath)) return false;
+  return true;
 }
 
 async function githubReadFile(env, sourcePath, allowMissing = false) {
