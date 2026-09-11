@@ -12,6 +12,7 @@ extra_css:
 
 extra_javascript:
   - assets/javascripts/web-editor.js
+  - assets/javascripts/external-links.js
 
 theme:
   name: material
