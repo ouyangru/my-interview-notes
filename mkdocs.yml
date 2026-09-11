@@ -78,6 +78,7 @@ nav:
           - 进程与线程: knowledge/操作系统/进程与线程.md
   - 面试复盘:
       - 使用说明: interviews/index.md
+      - 2026-09-10 嵌入式 / Linux 系统软件: interviews/2026-09-10-嵌入式Linux系统软件.md
   - 原始资料:
       - C/C++: C++.md
       - Linux 服务器: linux服务器.md
