@@ -1,3 +1,4 @@
+import re
 from pathlib import Path
 
 from markdown.extensions.toc import slugify_unicode
@@ -26,6 +27,14 @@ RAW_FILES = [
 ]
 
 
+def _clean_title(text: str) -> str:
+    text = re.sub(r"<[^>]+>", "", text)
+    text = re.sub(r"!\[([^\]]*)\]\([^)]*\)", r"\1", text)
+    text = re.sub(r"\[([^\]]+)\]\([^)]*\)", r"\1", text)
+    text = text.replace("`", "").replace("**", "").replace("__", "")
+    return text.strip().rstrip("#").strip()
+
+
 def _headings(path: Path):
     result = []
     in_fence = False
@@ -51,7 +60,7 @@ def _headings(path: Path):
         if level is None:
             continue
 
-        title = stripped[level + 1 :].strip().rstrip("#").strip()
+        title = _clean_title(stripped[level + 1 :])
         if title:
             result.append((level, title))
     return result
