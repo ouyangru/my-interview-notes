@@ -41,19 +41,27 @@ def _headings(path: Path):
             continue
         if in_fence:
             continue
-        if stripped.startswith("## ") or stripped.startswith("### "):
-            level = 2 if stripped.startswith("## ") and not stripped.startswith("### ") else 3
-            title = stripped[level + 1 :].strip().rstrip("#").strip()
-            if title:
-                result.append((level, title))
+
+        level = None
+        for candidate in (1, 2, 3):
+            prefix = "#" * candidate + " "
+            if stripped.startswith(prefix) and not stripped.startswith("#" * (candidate + 1)):
+                level = candidate
+                break
+        if level is None:
+            continue
+
+        title = stripped[level + 1 :].strip().rstrip("#").strip()
+        if title:
+            result.append((level, title))
     return result
 
 
 def _build_index():
     out = [
         "# 原始资料章节索引\n",
-        "这里按 Markdown 小标题索引原始 fork 知识库。点击条目直接跳到对应大文件的小节，而不是文件顶部。\n",
-        "也可以在其他 Markdown 中直接写 `[[操作系统#虚拟内存]]`、`[[计算机网络#TCP 三次握手]]` 这类双链。\n",
+        "这里按 Markdown 标题索引原始 fork 知识库。点击条目直接跳到对应大文件的小节，而不是文件顶部。\n",
+        "推荐在其他 Markdown 中使用语义双链，例如 `[[操作系统#页表与 TLB]]`、`[[计算机网络#TCP 三次握手]]`、`[[C++#智能指针]]`。构建时会先核对原文真实标题，再生成 fragment。\n",
     ]
     for ref in RAW_FILES:
         path = DOCS / ref
@@ -65,7 +73,7 @@ def _build_index():
         out.append(f"\n## {path.stem}\n")
         for level, title in headings:
             slug = slugify_unicode(title, "-")
-            indent = "  " if level == 3 else ""
+            indent = "  " * max(0, level - 1)
             out.append(f"{indent}- [{title}]({ref}#{slug})\n")
     return "".join(out)
 
