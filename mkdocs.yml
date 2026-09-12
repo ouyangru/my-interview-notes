@@ -18,6 +18,7 @@ extra_javascript:
 hooks:
   - hooks/interview_nav.py
   - hooks/knowledge_nav.py
+  - hooks/wikilinks.py
 
 theme:
   name: material
@@ -64,6 +65,7 @@ markdown_extensions:
   - tables
   - toc:
       permalink: true
+      slugify: !!python/name:markdown.extensions.toc.slugify_unicode
   - pymdownx.details
   - pymdownx.superfences
   - pymdownx.inlinehilite
