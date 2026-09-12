@@ -19,6 +19,7 @@ hooks:
   - hooks/interview_nav.py
   - hooks/knowledge_nav.py
   - hooks/wikilinks.py
+  - hooks/raw_reference_index.py
 
 theme:
   name: material
@@ -85,6 +86,7 @@ nav:
   - 面试复盘:
       - 使用说明: interviews/index.md
   - 原始资料:
+      - 章节索引: reference-index.md
       - C/C++: C++.md
       - Linux 服务器: linux服务器.md
       - 操作系统: 操作系统.md
