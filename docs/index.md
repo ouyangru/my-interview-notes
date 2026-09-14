@@ -8,6 +8,7 @@
   <span class="kb-chip">Base：原始资料</span>
   <span class="kb-chip">Overlay：个人理解</span>
   <span class="kb-chip">History：面试复盘</span>
+  <span class="kb-chip">Practice：笔试复盘</span>
 </div>
 
 </div>
@@ -32,6 +33,14 @@
 
     [:octicons-arrow-right-24: 查看复盘区](interviews/index.md)
 
+-   :material-code-braces: **笔试复盘**
+
+    ---
+
+    按时间整理代码题、原始思路、正确模型和错误类型，并附上高相关练习题用于迁移复习。
+
+    [:octicons-arrow-right-24: 查看笔试目录](written-tests/index.md)
+
 -   :material-bookshelf: **原始资料**
 
     ---
@@ -52,9 +61,11 @@
 
 ## 当前个人知识
 
-目前先从真实出现过的问题开始，不追求一次把整个题库重写。第一批个人节点从操作系统展开：
+目前先从真实出现过的问题开始，不追求一次把整个题库重写。当前可从操作系统和算法模式进入：
 
 - [进程与线程：`task_struct` 在哪里？](knowledge/操作系统/进程与线程.md)
+- [算法题模式识别与状态设计](knowledge/算法/算法题模式识别与状态设计.md)
+- [最近一次笔试复盘：序列连续合并计数](written-tests/2026-09-14-01序列连续合并计数复盘.md)
 
 后续每次面试结束，只新增这场面试真正暴露出来的知识缺口；已有主题就继续往原节点追加，不重复复制整页内容。
 
