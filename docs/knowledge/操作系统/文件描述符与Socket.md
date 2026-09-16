@@ -83,6 +83,22 @@ listen_fd
 - `listen_fd` 和 `accept()` 返回的 `connfd` 不是同一个 Socket 状态。
 - 面试官问“如何实现”时，不要自动退化成 API 使用教程；先判断是在问用户态用法还是内核机制。
 
+## `double close` 不是 `Double Free`
+
+状态：`[weak] [wrong] [interview] [project]`
+
+岚图智能驾驶一面中，我把一个真实的 fd 生命周期问题称为“指针 Double Free”，但随后描述的场景其实是：Socket fd 被封装进拥有资源所有权的 Handle，Handle 析构时已经自动 `close(fd)`，外部又手动关闭同一个 fd。这应称为 **double close**，不是 Double Free。
+
+- `Double Free`：同一块动态内存被 `free/delete` 两次。
+- `double close`：同一个文件描述符被关闭两次。
+- 两者的共同根因可能都是资源 ownership 不清楚，但资源类型与后果不同。
+
+fd 还有一个额外风险：`close(fd)` 后，这个整数槽位可以很快被内核复用。如果第二次 `close` 发生得较晚，它不一定只是返回 `EBADF`，还可能误关后来复用相同整数值的新资源。正确做法是明确唯一所有者，把关闭职责统一交给 RAII Handle；如果必须转移所有权，要让原持有者失效，不能保留两个都认为自己负责释放的入口。
+
+**面试推荐回答：**
+
+> 这里严格来说不是 Double Free，而是 double close。Handle 拥有 Socket fd，并在析构时自动关闭；我当时没有弄清 ownership，在销毁 Handle 后又手动 `close` 一次。后来把生命周期统一交给 Handle 管理，外部只使用而不释放。fd 关闭后还可能被内核复用，因此重复关闭极端情况下会误关新资源。
+
 ## 项目连接
 
 `[project]` V853 流媒体服务器：多客户端接入时，可以自然连接到 `listen -> accept -> connfd -> epoll`。下一次项目介绍不能只说“用 epoll 管多个客户端”，还应该能回答每个连接对应什么 fd、fd 通过什么结构关联 Socket、客户端断开后对象生命周期如何结束。
@@ -101,6 +117,7 @@ listen_fd
 ## 来源 / 原始题库关联
 
 - [2026-08-13 字节跳动 · 多媒体开发一面](../../interviews/2026-08-13-字节跳动-多媒体开发一面.md)
+- [2026-09-16 岚图汽车 · 智能驾驶岗位秋招一面](../../interviews/2026-09-16-岚图汽车-智能驾驶岗位秋招一面.md)
 - [[linux服务器#套接字类型|套接字类型与 Socket 基础]]
 - [[linux服务器#实现基于TCP/IP的客户端服务端|TCP/IP 客户端 / 服务端调用链]]
 - [[linux服务器#epoll|epoll 与多连接事件管理]]
