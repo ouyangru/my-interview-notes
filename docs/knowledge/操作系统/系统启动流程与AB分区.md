@@ -99,3 +99,92 @@ A/B 的价值不是“两个系统都一起运行”，而是让升级写入非�
 3. retry count 在哪一阶段递减？
 4. Bootloader 本身怎么升级？A/B 能否保护 Bootloader？
 5. Android A/B / Virtual A/B 和传统双完整分区有什么差异？
+
+
+## 2026-09-21 追加：slot metadata 到底存在哪里、Bootloader 怎么读
+
+### 1. 先记结论：位置平台相关，阶段关系才是核心
+
+A/B metadata 不是“内核启动以后临时生成的变量”，而是需要跨重启保存的持久化状态，所以它必须落在非易失性存储里。
+
+底层介质可能是：
+
+- eMMC；
+- UFS；
+- NAND / NOR Flash；
+- 其他厂商定义的持久化存储。
+
+具体放在哪个逻辑区域没有统一答案，常见实现包括：
+
+- 独立的 `misc` / `metadata` / `bootctrl` 一类分区；
+- GPT 分区表或分区属性中的 slot 状态；
+- U-Boot environment；
+- 厂商自己定义的一小块持久化区域。
+
+面试不能死背“肯定在 misc”或“肯定在 U-Boot env”。更稳的回答是：
+
+> metadata 的具体存储位置依平台实现而定，但它一定是 Bootloader 能在目标 kernel 启动之前读取到的持久化状态。
+
+### 2. Bootloader 为什么能读它
+
+Bootloader 在选择 A/B 之前，已经至少完成了足够的基础硬件初始化，能够访问启动介质，例如 eMMC/UFS/NAND。
+
+所以逻辑顺序是：
+
+> 上电 / BootROM → 前级引导 → 初始化存储控制器 → 读取分区表和 slot metadata → 选择 A/B → 读取对应 boot_a / boot_b → 校验并加载 kernel / ramdisk / dtb → 跳转 kernel。
+
+不是“先进 kernel，再看变量决定自己来自哪个 slot”。
+
+### 3. metadata 里为什么需要这些字段
+
+可以用一个抽象例子理解：
+
+```text
+slot A:
+priority = 15
+tries_remaining = 0
+successful_boot = 1
+
+slot B:
+priority = 14
+tries_remaining = 3
+successful_boot = 0
+```
+
+这些字段分别解决：
+
+- `priority`：多个可启动 slot 谁优先；
+- `tries_remaining`：一个新版本最多试启动几次；
+- `successful_boot`：这个版本是否已经被用户态确认稳定启动；
+- bootable / invalid：某个 slot 是否已经被判定不能继续尝试。
+
+字段名字可以不同，但语义基本围绕“选谁、还能试几次、以前是否成功”。
+
+### 4. OTA 后一次完整状态变化
+
+假设当前稳定运行 A：
+
+1. 系统把新镜像写入 inactive B；
+2. 做镜像完整性/签名检查；
+3. 修改持久化 slot metadata，让 B 成为下一次优先启动目标；
+4. 重启；
+5. Bootloader 读取 metadata，选择 B；
+6. 读取 `boot_b` / 对应 rootfs，加载并启动；
+7. 如果启动失败，重启后 `tries_remaining` 继续减少；
+8. 如果耗尽仍失败，回退 A；
+9. 如果 B 真正进入稳定用户态，再由用户态/系统服务通过平台接口把 B 标成 successful。
+
+关键点：
+
+> “kernel 能跑起来”不一定就应该立即标 successful。产品通常需要等关键用户态服务、挂载、健康检查等满足条件以后再确认，避免一个只能起 kernel、但业务完全不可用的版本被永久认定为成功。
+
+### 5. 面试推荐回答
+
+> A/B 的 slot 状态必须跨重启保存，所以会放在 eMMC、UFS、NAND 这类非易失性存储里。具体位置是平台相关的，可能是 misc/metadata/bootctrl 一类独立分区，也可能利用 GPT slot 属性、U-Boot environment 或厂商自定义区域。Bootloader 在初始化存储设备后先读取这些 metadata，根据 priority、remaining tries、successful 等状态选择 A 或 B，然后才去加载对应的 boot_a/boot_b 和 rootfs。OTA 一般写 inactive slot，新 slot 启动成功后再确认 successful；连续失败则根据剩余尝试次数回滚旧 slot。
+
+### 6. 易错点
+
+- 不要说“metadata 一定在某个固定分区”。
+- 不要把“U-Boot environment 是一种可能实现”说成所有系统都如此。
+- 不要把 eMMC / UFS 当成“分区名”；它们是底层存储介质，slot metadata 是其上的逻辑数据结构/分区/属性。
+- 不要说“内核通过环境变量选择自己从 A/B 启动”；slot 选择发生得更早。
