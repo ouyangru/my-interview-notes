@@ -121,3 +121,21 @@ fd 还有一个额外风险：`close(fd)` 后，这个整数槽位可以很快�
 - [[linux服务器#套接字类型|套接字类型与 Socket 基础]]
 - [[linux服务器#实现基于TCP/IP的客户端服务端|TCP/IP 客户端 / 服务端调用链]]
 - [[linux服务器#epoll|epoll 与多连接事件管理]]
+
+## 2026-10-08 TCL 软件开发一面：Socket 客户端/服务端 API 再次混淆
+
+来源：[TCL 一面 · 问题 3](../../../docs/interviews/2026-10-08-TCL-软件开发工程师一面.md#问题-3--socket-客户端和服务端完整调用链)。状态：`[wrong] [weak] [interview] [project]`。
+
+### 我的现场原话和典型错误
+
+- 当时说客户端“申请一个 Socket FD，然后通过 `bind` 来绑定服务器的 IP……再通过 `connect` 来连接”。
+- 服务端说“通过 `accept` 来监听有没有 TCP 连接”，没有说明 `listen()` 令监听 socket 进入监听状态，`accept()` 从已完成连接队列返回**新的连接 fd**。
+- **这是明确重复错误**：2026-06-22 影石一面同样有客户端/服务端流程混淆，本次再次答错，不可因为历史知识页早已写正确答案就升状态。
+
+### 修正后的个人理解
+
+普通 TCP 客户端：`socket → connect(对方 IP:port) → send/recv → close`；TCP 服务端：`socket → bind(本机 IP:port) → listen → accept(返回 connfd) → send/recv → close`。客户端可以按需 bind **本地** IP/端口，而非绑定服务器地址；socket FD 只是本进程索引，`listen_fd` 和 `conn_fd` 职责不同。
+
+### 项目连接与追问
+
+V853 作为板端 HTTP/TCP 服务端，PC 浏览器通常是客户端；明确哪个环节监听新连接、哪个环节读取请求、哪个 fd 注册 epoll，不能再说“accept 监听”。独立回测：不用看笔记手绘 1 服务器、3 客户端、监听 FD/连接 FD，并口述客户端可选 bind 的真实语义。
