@@ -33,6 +33,7 @@
 ### Linux
 
 - [内存泄漏排查](Linux/内存泄漏排查.md)
+- [Linux 驱动模型与块设备链路](Linux/Linux驱动模型与块设备链路.md)：驱动匹配与 `probe`、教学 OS 边界、VFS/块层/MMC/eMMC 分层；当前 `[weak] [wrong] [interview]`。
 
 ### 网络与通信
 
