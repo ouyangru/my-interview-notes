@@ -33,6 +33,7 @@
 ### Linux
 
 - [内存泄漏排查](Linux/内存泄漏排查.md)
+- [GDB 与内存踩踏排查](Linux/GDB与内存踩踏排查.md)：断点/步进、多线程栈、core dump、ASan 与硬件 watchpoint；当前 `[weak] [interview]`。
 - [Linux 驱动模型与块设备链路](Linux/Linux驱动模型与块设备链路.md)：驱动匹配与 `probe`、教学 OS 边界、VFS/块层/MMC/eMMC 分层；当前 `[weak] [wrong] [interview]`。
 
 ### 网络与通信
@@ -61,6 +62,7 @@
 ### 工程化
 
 - [CI/CD 中编译、单测、集成测试的边界](工程化/CI-CD编译单测集成测试边界.md)
+- [AI Agent 与 Skill 工程化](工程化/AI Agent与Skill工程化.md)：自然语言解析、权限/白名单、确定性执行、幂等、审计与 Skill 验收。
 
 ### 嵌入式 UI
 
