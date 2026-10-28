@@ -36,6 +36,10 @@
 - [GDB 与内存踩踏排查](Linux/GDB与内存踩踏排查.md)：断点/步进、多线程栈、core dump、ASan 与硬件 watchpoint；当前 `[weak] [interview]`。
 - [Linux 驱动模型与块设备链路](Linux/Linux驱动模型与块设备链路.md)：驱动匹配与 `probe`、教学 OS 边界、VFS/块层/MMC/eMMC 分层；当前 `[weak] [wrong] [interview]`。
 
+### AI 与端侧部署
+
+- [端侧模型部署与推理基础](AI与端侧部署/端侧模型部署与推理基础.md)：LLM/CV 边界、GPU/NPU、ONNX、量化、厂商运行时及精度/性能验证；当前 `[weak] [interview]`，尚无真实板端完整部署证据。
+
 ### 网络与通信
 
 - [TCP 粘包与应用层消息边界](网络/TCP粘包与应用层消息边界.md)
@@ -91,3 +95,4 @@
 
 !!! tip "推荐用法"
     面试结束后先写 `interviews/` 复盘，再把长期有价值的问题沉淀进这里。事件历史放复盘，长期知识放知识库，当前薄弱点放 `STATUS.md`。
+
